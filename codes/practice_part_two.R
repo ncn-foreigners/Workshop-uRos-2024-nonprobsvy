@@ -35,6 +35,14 @@ head(admin)
 
 
 ## ----ipw-stadnard----------------------------------------------------------------------------------------------------
+est_logit <- nonprob(
+  selection = ~ region + private,
+  target = ~ single_shift,
+  svydesign = jvs_svy,
+  data = admin,
+  method_selection = "logit"
+)
+### EX 0 Add nace and size variables to the model - compare the results.
 est1_logit <- nonprob(
   selection = ~ region + private + nace + size,
   target = ~ single_shift,
@@ -43,11 +51,7 @@ est1_logit <- nonprob(
   method_selection = "logit"
 )
 
-nonprob <- est1_logit
-
-total.nonprobsvy(x =  ~ region, nonprob = est1_logit)
-mean.nonprobsvy(x =  ~ region + nace, nonprob = est1_logit)
-
+### EX 1 Carry out an analogous inference using probit as the linking function.
 est1_probit <- nonprob(
   selection = ~ region + private + nace + size,
   target = ~ single_shift,
@@ -56,6 +60,7 @@ est1_probit <- nonprob(
   method_selection = "probit"
 )
 
+### EX 2 Carry out an analogous inference using cloglog as the linking function.
 est1_cloglog <- nonprob(
   selection = ~ region + private + nace + size,
   target = ~ single_shift,
@@ -94,6 +99,27 @@ est2_logit <- nonprob(
   control_selection = controlSel(h = 1, est_method_sel = "gee")
 )
 
+### EX 3 Estimate with an another choice for h function.
+est2_logit_ex4 <- nonprob(
+  selection = ~ region + private + nace + size,
+  target = ~ single_shift,
+  svydesign = jvs_svy,
+  data = admin,
+  method_selection = "logit",
+  control_selection = controlSel(h = 2, est_method_sel = "gee")
+)
+
+### EX 4 Change the set of dependent variables and compare the results.
+est2_logit_ex5 <- nonprob(
+  selection = ~ nace + size,
+  target = ~ single_shift,
+  svydesign = jvs_svy,
+  data = admin,
+  method_selection = "logit",
+  control_selection = controlSel(h = 1, est_method_sel = "gee")
+)
+
+### EX 5 Carry out an analogous inference using probit as the linking function.
 est2_probit <- nonprob(
   selection = ~ region + private + nace + size,
   target = ~ single_shift,
@@ -103,6 +129,7 @@ est2_probit <- nonprob(
   control_selection = controlSel(h = 1, est_method_sel = "gee")
 )
 
+### EX 6 Carry out an analogous inference using cloglog as the linking function.
 est2_cloglog <- nonprob(
   selection = ~ region + private + nace + size,
   target = ~ single_shift,
@@ -139,6 +166,8 @@ xtabs(ipw2_weight ~ size, admin)
 
 
 ## ----ipw-bootstrap---------------------------------------------------------------------------------------------------
+### EX 7 Estimate the mean using the inverse probability weighting method with the bootstrap method for variance.
+### In addition, try playing with the number of iterations and arguments
 set.seed(2024-08-27)
 est3_logit <- nonprob(
   selection = ~ region + private + nace + size,
@@ -155,6 +184,7 @@ summary(est3_logit)
 
 
 ## ----ipw-scad--------------------------------------------------------------------------------------------------------
+### EX 8 Conduct inference with an additional variable selection step, e.g. SCAD
 set.seed(2024-08-27)
 est4_logit <- nonprob(
   selection = ~ region + private + nace + size,
@@ -166,7 +196,6 @@ est4_logit <- nonprob(
   control_inference = controlInf(vars_selection = TRUE),
   verbose = TRUE
 )
-
 
 ## ----ipw-scad-summary------------------------------------------------------------------------------------------------
 summary(est4_logit)
@@ -191,12 +220,10 @@ est5_glm <- nonprob(
   family_outcome = "gaussian"
 )
 
-mean.nonprobsvy(x =  ~ region, nonprob = est5_glm)
-
 cbind(est5_glm$output,est5_glm$confidence_interval)
 
-
 ## ----mi-glm-binom----------------------------------------------------------------------------------------------------
+### EX 9 Use a binomial model instead of a Gaussian model for the single_shift variable
 est5_glm_biom <- nonprob(
   outcome = single_shift ~ region + private + nace + size,
   svydesign = jvs_svy,
@@ -215,6 +242,7 @@ str(est5_glm_biom$outcome,1)
 
 
 ## ----mi-glm-nn-------------------------------------------------------------------------------------------------------
+### EX 10 Use another mass imputation method - NN - in addition the number of neighbours (k) can be dealt with
 est6_glm_nn <- nonprob(
   outcome = single_shift ~ region + private + nace + size,
   svydesign = jvs_svy,
@@ -226,6 +254,7 @@ cbind(est6_glm_nn$output,est6_glm_nn$confidence_interval)
 
 
 ## ----mi-glm-pmm-1----------------------------------------------------------------------------------------------------
+### EX 11 Use another mass imputation method - PMM - in addition the number of neighbours (k) can be dealt with
 set.seed(2024-08-27)
 est6_glm_pmm1 <- nonprob(
   outcome = single_shift ~ region + private + nace + size,
@@ -252,6 +281,7 @@ cbind(est6_glm_pmm2$output, est6_glm_pmm2$confidence_interval)
 
 
 ## ----mi-glm-scad-----------------------------------------------------------------------------------------------------
+### EX 12 Add an additional variable selection step, e.g. SCAD
 set.seed(2024-08-27)
 est7_glm_sel <- nonprob(
   outcome = single_shift ~ region + private + nace + size,
@@ -306,6 +336,7 @@ str(est8_dr1,1)
 
 
 ## ----dr-glm-calib----------------------------------------------------------------------------------------------------
+### EX 13 Use a calibration method for inverse probability weighting part
 est8_dr2 <- nonprob(
   selection = ~ region + private + nace + size,
   outcome = single_shift ~ region + private + nace + size,
@@ -321,6 +352,7 @@ cbind(est8_dr2$output,est8_dr2$confidence_interval)
 
 
 ## ----dr-glm-bootstrap------------------------------------------------------------------------------------------------
+### EX 14 Use a bootstrap variance for DR estimator
 set.seed(2024-08-27)
 est8_dr3 <- nonprob(
   selection = ~ region + private + nace + size,
@@ -338,6 +370,7 @@ cbind(est8_dr3$output,est8_dr3$confidence_interval)
 
 
 ## ----dr-glm-scad-----------------------------------------------------------------------------------------------------
+### EX 15 Add an additional variable selection step, e.g. SCAD
 set.seed(2024-08-27)
 est9_dr1 <- nonprob(
   selection = ~ region + private + nace + size,
@@ -357,6 +390,7 @@ cbind(est9_dr1$output,est9_dr1$confidence_interval)
 
 
 ## ----dr-glm-scad-bias-min--------------------------------------------------------------------------------------------
+### EX 16 Add an additional variable selection step, e.g. SCAD and estimate using bias minimization approach
 set.seed(2024-08-27)
 est9_dr2 <- nonprob(
   selection = ~ region + private + nace + size,
@@ -374,7 +408,6 @@ est9_dr2 <- nonprob(
 
 cbind(est9_dr2$output,est9_dr2$confidence_interval)
 
-
 ## ----dr-summary-------------------------------------------------------------------------------------------------
 dr_summary <- rbind(cbind(est8_dr1$output, est8_dr1$confidence_interval),
                     cbind(est8_dr2$output, est8_dr2$confidence_interval),
@@ -387,9 +420,9 @@ dr_summary
 
 
 ## ----summary-plot------------------------------------------------------------------------------------------------
-wyniki <- rbind(ipw_summary, mi_summary, dr_summary)
+results <- rbind(ipw_summary, mi_summary, dr_summary)
 
-ggplot(data = wyniki, aes(y = est, x = mean, xmin = lower_bound, xmax = upper_bound)) +
+ggplot(data = results, aes(y = est, x = mean, xmin = lower_bound, xmax = upper_bound)) +
   geom_point() +
   geom_vline(xintercept = mean(admin$single_shift), linetype = "dotted", color = "red") +
   geom_errorbar() +
